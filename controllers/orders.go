@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"encoding/json"
 	"go-api-project/structs"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
@@ -20,19 +22,30 @@ func (idb *InDB) CreateOrder(c *gin.Context) {
 		result gin.H
 	)
 
-	customerName := c.PostForm("customer_name")
-	itemCode := c.PostForm("item_code")
-	description := c.PostForm("description")
-	quantity := c.PostForm("quantity")
+	// customerName := c.PostForm("customer_name")
+	// itemCode := c.PostForm("item_code")
+	// description := c.PostForm("description")
+	// quantity := c.PostForm("quantity")
 
-	order.CustomerName = customerName
-	order.OrderedAt = time.Now()
+	jsonData, err := ioutil.ReadAll(c.Request.Body)
+	if err != nil {
+		panic(err)
+	}
 
-	order.Item.ItemCode, _ = strconv.ParseInt(itemCode, 10, 64)
-	order.Item.Description = description
-	order.Item.Quantity, _ = strconv.ParseInt(quantity, 10, 64)
+	err = json.Unmarshal([]byte(jsonData), &order)
+	if err != nil {
+		panic(err.Error())
+	}
 
-	err := idb.DB.Create(&order).Error
+	// PostForm
+	// order.CustomerName = customerName
+	// order.OrderedAt = time.Now()
+
+	// order.Item.ItemCode, _ = strconv.ParseInt(itemCode, 10, 64)
+	// order.Item.Description = description
+	// order.Item.Quantity, _ = strconv.ParseInt(quantity, 10, 64)
+
+	err = idb.DB.Create(&order).Error
 	if err != nil {
 		result = gin.H{
 			"result": "Order data isn't created",
